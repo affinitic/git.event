@@ -29,8 +29,8 @@ class PushEvent(GitEvent):
     def tickets(self):
         """
         One message per ticket, but tickets are grouped by commit reference
-        commits_dict = {"affinitic_6060": [commit1, commit2],
-                        "arsia_2020": [commit3]}
+        commits_dict = {"affinitic_6060_refs": [commit1, commit2],
+                        "arsia_2020_closes": [commit3]}
         tickets = [ticket1, ticket2]
         """
         commits_dict = {}
@@ -41,7 +41,7 @@ class PushEvent(GitEvent):
                 continue
 
             for parsed in parseds:
-                key = parsed['trac']+'_'+parsed['ticket']
+                key = parsed['trac']+'_'+parsed['ticket']+'_'+parsed['command']
 
                 # Initialize commit list
                 if key not in commits_dict:
@@ -69,11 +69,15 @@ class Ticket(object):
 
     @property
     def trac(self):
-        return int(self.key.split('_')[0])
+        return self.key.split('_')[0]
 
     @property
     def id(self):
         return int(self.key.split('_')[1])
+
+    @property
+    def command(self):
+        return self.key.split('_')[2]
 
     @property
     def comment(self):
