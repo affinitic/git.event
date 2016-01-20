@@ -29,49 +29,51 @@ class PushEvent(GitEvent):
     def tickets(self):
         """
         One message per ticket, but tickets are grouped by commit reference
-        commits_dict = {"affinitic6060": [commit1, commit2],
-                        "arsia2021": [commit3]}
+        commits_dict = {"affinitic_6060": [commit1, commit2],
+                        "arsia_2020": [commit3]}
         tickets = [ticket1, ticket2]
         """
         commits_dict = {}
         for commit in self.request.commits:
-            parsed = parse_commit_message(commit.message)
+            parseds = parse_commit_message(commit.message)
             # Do not push anything if nothing found in parsing
-            if not parsed:
+            if not parseds:
                 continue
 
-            key = parsed['trac']+parsed['ticket']
+            for parsed in parseds:
+                key = parsed['trac']+'_'+parsed['ticket']
 
-            # Initialize commit list
-            if key not in commits_dict:
-                commits_dict[key] = []
+                # Initialize commit list
+                if key not in commits_dict:
+                    commits_dict[key] = []
 
-            commits_dict[key].append(commit)
+                commits_dict[key].append(commit)
 
         tickets = []
         for key in commits_dict:
             tickets.append(Ticket(request=self.request,
-                                  commits=commits_dict[key]))
+                                  commits=commits_dict[key],
+                                  key=key))
         return tickets
 
 
 class Ticket(object):
 
-    def __init__(self, request, commits):
+    def __init__(self, request, commits, key):
+        """
+        key = 'affinitic_6060'
+        """
         self.request = request
         self.commits = commits
-
-    @property
-    def _parsed(self):
-        return parse_commit_message(self.commits[0].message)
-
-    @property
-    def id(self):
-        return int(self._parsed["ticket"])
+        self.key = key
 
     @property
     def trac(self):
-        return self._parsed["trac"]
+        return int(self.key.split('_')[0])
+
+    @property
+    def id(self):
+        return int(self.key.split('_')[1])
 
     @property
     def comment(self):
