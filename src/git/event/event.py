@@ -4,6 +4,7 @@ from zope.interface import implements
 from git.event.parser import parse_commit_message
 from .interfaces import IPullRequestEvent
 from .interfaces import IPushEvent
+from collections import OrderedDict
 
 
 class GitEvent(object):
@@ -33,23 +34,26 @@ class PushEvent(GitEvent):
                         "arsia_2020_closes": [commit3]}
         tickets = [ticket1, ticket2]
         """
-        commits_dict = {}
-        for commit in self.request.commits:
+        commits_dict = OrderedDict()
+        # sort array to have older commit first
+        commits = self.request.commits
+
+        for commit in commits:
             parseds = parse_commit_message(commit.message)
             # Do not push anything if nothing found in parsing
             if not parseds:
                 continue
 
             for parsed in parseds:
-                key = parsed['trac']+'_'+parsed['ticket']+'_'+parsed['command']
+                key = parsed['trac'] + '_' + parsed['ticket'] + '_' + parsed['command']
 
                 # Initialize commit list
                 if key not in commits_dict:
                     commits_dict[key] = []
 
                 commits_dict[key].append(commit)
-
         tickets = []
+
         for key in commits_dict:
             tickets.append(Ticket(request=self.request,
                                   commits=commits_dict[key],
@@ -90,3 +94,7 @@ class Ticket(object):
     @property
     def user(self):
         return self.request.author
+
+    @property
+    def author_email(self):
+        return self.request.author_email

@@ -3,7 +3,13 @@ import re
 
 KEYWORDS = {'resolve': ('fix', 'fixes', 'fixe', 'close', 'closes'),
             'refs': ('refs', 'ref', 'reference'),
-            'production': ('prod', 'production', 'productions')}
+            'production': ('prod', 'production', 'productions'),
+            'test': ('test', 'tests', 'testing'),
+            'leave': tuple(),
+            'reassign': tuple(),
+            'analyze': tuple(),
+            'develop': tuple(),
+            }
 
 
 def parse_commit_message(message):
