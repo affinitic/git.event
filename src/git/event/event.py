@@ -5,6 +5,7 @@ from git.event.parser import parse_commit_message
 from .interfaces import IPullRequestEvent
 from .interfaces import IPushEvent
 from collections import OrderedDict
+import ConfigParser
 
 
 class GitEvent(object):
@@ -93,8 +94,24 @@ class Ticket(object):
 
     @property
     def user(self):
-        return self.request.author
+        return find_trac_user(self.request.author)
 
     @property
     def author_email(self):
         return self.request.author_email
+
+
+def find_trac_user(author):
+    """
+    Return related trac user if found
+    """
+    config = ConfigParser.RawConfigParser()
+    config.read('trac_hooks.cfg')
+    nicknames = config.items('nicknames')
+
+    for user, aliases in nicknames:
+        for alias in aliases.split('\n'):
+            if alias == author:
+                return user
+
+    return author
