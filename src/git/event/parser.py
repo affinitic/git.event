@@ -61,7 +61,7 @@ def parse_commit_message(message):
         split = ref.split()
         datas = split[-2:]
 
-        ticket = 0
+        ticket = '0'
         for data in datas:
             found = re.findall('\d+', data)
             if found:
