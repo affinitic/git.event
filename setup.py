@@ -31,5 +31,5 @@ setup(name='git.event',
       install_requires=[
           'setuptools',
           'pyramid',
-          'affinitic.git.hooks',
+          'affinitic_git_hooks',
       ])

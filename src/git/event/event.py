@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from zope.interface import implements
-
-from affinitic.git.hooks.utils import parse_commit_message
+from hooks.utils import parse_commit_message
 from .interfaces import IPullRequestEvent
 from .interfaces import IPushEvent
 from collections import OrderedDict
