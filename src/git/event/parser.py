@@ -16,12 +16,13 @@ def parse_commit_message(message):
     """
     Return useful data in a commit message
 
-    Ex: "This is a message refs #6060 affinitic"
-    return [{"ticket": "6060",
+    Ex: "This is a message refs affinitic #6060"
+    return [{"command": "refs",
+             "ticket": "6060",
              "trac": "affinitic"}]
 
-    Ex2: "Refs 2020 arsia new commit message
-          But also for refs #6060 affinitic"
+    Ex2: "Refs arsia 2020 new commit message
+          But also for refs affinitic #6060"
     return [{"command": "refs",
              "ticket": "2020",
              "trac": "arsia"},
@@ -30,54 +31,44 @@ def parse_commit_message(message):
              "trac": "affinitic"}]
 
     Allowed formats:
-        "Message refs 6060 affinitic"
-        "Message refs #6060 affinitic"
-        "Message Refs 6060 affinitic"
         "Message refs affinitic 6060"
-        "refs 6060 affinitic Message"
-        "Message refs 6060 affinitic and refs #2020 arsia"
+        "Message refs affinitic #6060 #7070 #8080"
+        "Message Refs affinitic 6060"
+        "Message refs affinitic 6060"
+        "refs affinitic 6060 Message"
+        "Message refs affinitic 6060 and refs arsia #2020"
     """
-    parseds = []
-
     # ['closes', 'close', 'fix', ...]
     keywords = []
     [keywords.extend(val) for val in KEYWORDS.values()]
-
-    # 'close|closes|fix...'
+    # we need to sort to match longuest command possible
+    keywords.sort(lambda x, y: cmp(len(y), len(x)))
+    # 'closes|close|fix...'
     keywords_re = '|'.join(keywords)
 
-    # refs = ['Refs #6060 affinitic', 'fixes 2020 arsia']
-    refs = re.findall("(?:%s)(?:\s[^\s]+){2}" % keywords_re,
+    # [('refs', 'affinitic', '#1'), ('refs', 'affinitic', '#2')]
+    refs = re.findall('(%s)[ ]*([a-z]+)[ ]*([# \d]*)' % keywords_re,
                       message,
                       re.IGNORECASE)
 
-    if not refs:
-        return parseds
-
+    parseds = []
     for ref in refs:
-        parsed = {}
+        if len(ref) != 3:
+            # XXX envoi de mail si 1 < ref < 3 ?
+            continue
 
-        # datas = ['#5060', 'affinitic']
-        split = ref.split()
-        datas = split[-2:]
+        command = _word_to_command(ref[0])
+        trac = ref[1].lower()
+        tickets = ref[2]
 
         ticket = '0'
-        for data in datas:
-            found = re.findall('\d+', data)
-            if found:
-                ticket = found[0]
-
-        trac = ''
-        for data in datas:
-            found = re.findall('[a-zA-Z]+', data)
-            if found:
-                trac = found[0]
-
-        command = _word_to_command(split[0])
-        parsed["command"] = command
-        parsed["ticket"] = ticket
-        parsed["trac"] = trac.lower()
-        parseds.append(parsed)
+        tickets_split = re.findall('\d+', tickets)
+        for ticket in tickets_split:
+            parsed = {}
+            parsed["command"] = command
+            parsed["ticket"] = ticket
+            parsed["trac"] = trac
+            parseds.append(parsed)
 
     return parseds
 
