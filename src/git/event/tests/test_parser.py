@@ -44,6 +44,16 @@ class TestParser(unittest.TestCase):
             parsed,
             [{'ticket': '1', 'command': 'refs', 'trac': 'affinitic'}]
         )
+        parsed = parse_commit_message("Message refs affinitic  1")
+        self.assertEquals(
+            parsed,
+            [{'ticket': '1', 'command': 'refs', 'trac': 'affinitic'}]
+        )
+        parsed = parse_commit_message("Message refs  affinitic 1")
+        self.assertEquals(
+            parsed,
+            [{'ticket': '1', 'command': 'refs', 'trac': 'affinitic'}]
+        )
 
     def test_double_tickets(self):
         parsed = parse_commit_message("Message refs affinitic #1 and refs affinitic #2")
