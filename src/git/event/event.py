@@ -110,7 +110,7 @@ def find_trac_user(author):
 
     for user, aliases in nicknames:
         for alias in aliases.split('\n'):
-            if alias == author:
+            if alias.decode('utf-8') == author:
                 return user
 
     return author
